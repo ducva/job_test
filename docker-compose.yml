@@ -11,9 +11,9 @@ services:
       APP_ENV: "dev"
       APP_DEBUG: "True"
       APP_PORT: 5000
-      MONGODB_DATABASE: flaskdb
-      MONGODB_USERNAME: flaskuser
-      MONGODB_PASSWORD: flaskpwd
+      MONGODB_DATABASE: ${DB_NAME}
+      MONGODB_USERNAME: ${DB_USERNAME}
+      MONGODB_PASSWORD: ${DB_PASSWORD}
       MONGODB_HOSTNAME: mongodb
     volumes:
       - ./app:/var/www
@@ -30,12 +30,12 @@ services:
     restart: unless-stopped
     command: mongod --auth
     environment:
-      MONGO_INITDB_DATABASE: flaskdb
-      MONGO_INITDB_ROOT_USERNAME: mongoadmin
-      MONGO_INITDB_ROOT_PASSWORD: mongopwd
-      MONGO_NON_ROOT_USERNAME: flaskuser
-      MONGO_NON_ROOT_PASSWORD: flaskpwd
-      $MONGO_NON_ROOT_ROLE: readWrite
+      MONGO_INITDB_DATABASE: ${DB_NAME}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_NON_ROOT_USERNAME: ${DB_USERNAME}
+      MONGO_NON_ROOT_PASSWORD: ${DB_PASSWORD}
+      MONGO_NON_ROOT_ROLE: readWrite
       MONDODB_LOG_DIR: /dev/null
     volumes:
       - ./docker/mongo/00_setup_user.sh:/docker-entrypoint-initdb.d/00_setup_user.sh:ro
@@ -51,8 +51,8 @@ services:
     networks:
       - backend
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: mongoadmin
-      ME_CONFIG_MONGODB_ADMINPASSWORD: mongopwd
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD}
       ME_CONFIG_MONGODB_SERVER: mongodb
 volumes:
   mongodbdata:
