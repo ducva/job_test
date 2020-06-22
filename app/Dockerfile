@@ -1,0 +1,27 @@
+FROM python:3.6.8-alpine3.9 as BaseImage
+
+LABEL MAINTAINER="Michael Vu <vuanhduc2685@gmail.com>"
+
+ENV GROUP_ID=1000 \
+    USER_ID=1000
+
+WORKDIR /var/www/
+
+RUN pip install --upgrade pip
+RUN pip install gunicorn
+
+RUN addgroup -g $GROUP_ID www
+RUN adduser -D -u $USER_ID -G www www -s /bin/sh
+
+USER www
+
+
+FROM BaseImage
+EXPOSE 5000
+
+ADD ./requirements.txt /var/www/requirements.txt
+RUN pip install -r requirements.txt
+VOLUME /var/www
+COPY . /var/www/
+
+CMD [ "gunicorn", "-w", "4", "--bind", "0.0.0.0:5000", "wsgi"]
