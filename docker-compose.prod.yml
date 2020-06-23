@@ -5,7 +5,7 @@ services:
     volumes:
       - appdata:/app
     ports:
-    - ${APP_PORT}:5000
+    - 8080:5000
     depends_on:
       - mongodb
   mongodb:

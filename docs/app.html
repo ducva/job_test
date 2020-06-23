@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>app.py</title>
+  <link rel="stylesheet" href="pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>app.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">abort</span>
+<span class="kn">from</span> <span class="nn">mongoengine</span> <span class="kn">import</span> <span class="n">OperationError</span>
+
+<span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">db</span><span class="p">,</span> <span class="n">Order</span>
+
+<span class="n">application</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">application</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;MONGODB_SETTINGS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;db&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;MONGODB_DATABASE&quot;</span><span class="p">],</span>
+    <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;MONGODB_HOSTNAME&quot;</span><span class="p">],</span>
+    <span class="s1">&#39;port&#39;</span><span class="p">:</span> <span class="mi">27017</span><span class="p">,</span>
+    <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;MONGODB_USERNAME&quot;</span><span class="p">],</span>
+    <span class="s1">&#39;password&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;MONGODB_PASSWORD&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="n">db</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">application</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <p>date must be integer, &gt; 0 and &lt;= 366
+:param date_val:
+:return:</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@application</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span>
+        <span class="n">status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_is_valid_date</span><span class="p">(</span><span class="n">date_val</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">try</span><span class="p">:</span>
+        <span class="n">date</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">date_val</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">date</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="p">(</span><span class="n">date</span> <span class="o">-</span> <span class="mi">366</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>Validate order&rsquo;s data
+- data must be in json format
+- must have &lsquo;date&rsquo; and &lsquo;fruits&rsquo; property
+- fruits must be a dict, with values are float non-negative numbers.
+:param req: The Request
+:return: HTTP error code. 400 for invalid order&rsquo;s data. 200 for the valid case.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_validate_order</span><span class="p">(</span><span class="n">req</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">if</span> <span class="ow">not</span> <span class="n">req</span><span class="o">.</span><span class="n">json</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">400</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">json</span>
+    <span class="k">if</span> <span class="s1">&#39;date&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">or</span> <span class="s1">&#39;fruits&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">400</span>
+    <span class="k">if</span> <span class="n">_is_valid_date</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">400</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;fruits&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">kg</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">kg</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">400</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="mi">400</span>
+    <span class="k">return</span> <span class="mi">200</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@application</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/order&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">add_orders</span><span class="p">():</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="n">_validate_order</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="n">abort</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      <p>create array of orders from input
+all records are belong to same order id</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">order_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+    <span class="n">date</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">])</span>
+    <span class="n">orders</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">fruit</span><span class="p">,</span> <span class="n">kg</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;fruits&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="n">Order</span><span class="p">(</span><span class="n">order_id</span><span class="o">=</span><span class="n">order_id</span><span class="p">)</span>
+        <span class="n">order</span><span class="o">.</span><span class="n">date</span> <span class="o">=</span> <span class="n">date</span>
+        <span class="n">order</span><span class="o">.</span><span class="n">fruit</span> <span class="o">=</span> <span class="n">fruit</span>
+        <span class="n">order</span><span class="o">.</span><span class="n">kg</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kg</span><span class="p">)</span>
+        <span class="n">orders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      <p>insert as a bulk</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">try</span><span class="p">:</span>
+        <span class="n">Order</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">orders</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">OperationError</span><span class="p">:</span>
+        <span class="n">abort</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span>
+        <span class="n">status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">message</span><span class="o">=</span><span class="s1">&#39;Order created&#39;</span>
+    <span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_validate_report</span><span class="p">(</span><span class="n">req</span><span class="p">):</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">args</span>
+    <span class="k">if</span> <span class="n">_is_valid_date</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;from&#39;</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">or</span> <span class="n">_is_valid_date</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;to&#39;</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">400</span>
+    <span class="k">return</span> <span class="mi">200</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="nd">@application</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/report&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">report</span><span class="p">():</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="n">_validate_report</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="n">abort</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+
+    <span class="n">params</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span>
+    <span class="n">from_date</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;from&#39;</span><span class="p">))</span>
+    <span class="n">to_date</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;to&#39;</span><span class="p">))</span>
+
+    <span class="n">pipeline</span> <span class="o">=</span> <span class="p">[{</span>
+        <span class="s2">&quot;$group&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="s2">&quot;$fruit&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;$sum&quot;</span><span class="p">:</span> <span class="s2">&quot;$kg&quot;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}]</span>
+    <span class="n">orders</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">Order</span><span class="o">.</span><span class="n">objects</span><span class="p">(</span><span class="n">date__gte</span><span class="o">=</span><span class="n">from_date</span><span class="p">,</span> <span class="n">date__lte</span><span class="o">=</span><span class="n">to_date</span><span class="p">)</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">pipeline</span><span class="p">))</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      <p>transpose to the output format</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">orders</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">[</span><span class="n">order</span><span class="p">[</span><span class="s1">&#39;_id&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span>
+        <span class="n">status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">data</span>
+    <span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">ENVIRONMENT_DEBUG</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;APP_DEBUG&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">ENVIRONMENT_PORT</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;APP_PORT&quot;</span><span class="p">,</span> <span class="mi">5000</span><span class="p">)</span>
+    <span class="n">application</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">ENVIRONMENT_PORT</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">ENVIRONMENT_DEBUG</span><span class="p">)</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

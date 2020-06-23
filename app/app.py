@@ -2,6 +2,7 @@ import os
 import uuid
 
 from flask import Flask, jsonify, request, abort
+from mongoengine import OperationError
 
 from models import db, Order
 
@@ -24,24 +25,42 @@ def index():
         status=True,
     )
 
+def _is_valid_date(date_val):
+    """
+    date must be integer, > 0 and <= 366
+    :param date_val:
+    :return:
+    """
+    try:
+        date = int(date_val)
+        if date < 0 or (date - 366) >= 0:
+            return False
+    except (TypeError, ValueError):
+        return False
+    return True
 
-def _validate_order(request):
-    if not request.json:
-        abort(400)
+def _validate_order(req):
+    """
+    Validate order's data
+    - data must be in json format
+    - must have 'date' and 'fruits' property
+    - fruits must be a dict, with values are float non-negative numbers.
+    :param req: The Request
+    :return: HTTP error code. 400 for invalid order's data. 200 for the valid case.
+    """
+    if not req.json:
+        return 400
 
-    data = request.json
+    data = req.json
     if 'date' not in data or 'fruits' not in data:
         return 400
-    try:
-        date = int(data['date'])
-        if date < 0 or date > 365:
-            return 400
-    except (TypeError, ValueError):
+    if _is_valid_date(data['date']) is False:
         return 400
-
     for key, val in data['fruits'].items():
         try:
-            float(val)
+            kg = float(val)
+            if kg < 0:
+                return 400
         except (TypeError, ValueError):
             return 400
     return 200
@@ -57,24 +76,30 @@ def add_orders():
     # create array of orders from input
     # all records are belong to same order id
     order_id: str = str(uuid.uuid4())
+    date = int(data['date'])
+    orders = []
     for fruit, kg in data['fruits'].items():
         order = Order(order_id=order_id)
-        order.date = int(data['date'])
+        order.date = date
         order.fruit = fruit
         order.kg = float(kg)
-        order.save()
+        orders.append(order)
+
+    # insert as a bulk
+    try:
+        Order.objects.insert(orders)
+    except OperationError:
+        abort(500)
+
     return jsonify(
         status=True,
         message='Order created'
     )
 
 
-def _validate_report(request):
-    params = request.args
-    try:
-        _ = int(params.get('from'))
-        _ = int(params.get('to'))
-    except TypeError:
+def _validate_report(req):
+    params = req.args
+    if _is_valid_date(params.get('from')) is False or _is_valid_date(params.get('to')) is False:
         return 400
     return 200
 
@@ -99,6 +124,8 @@ def report():
     }]
     orders = list(Order.objects(date__gte=from_date, date__lte=to_date).aggregate(pipeline))
     data = {}
+
+    # transpose to the output format
     for order in orders:
         data[order['_id']] = order['total']
     return jsonify(

@@ -1,26 +1,32 @@
-setup:
-	cp .env.example .env
+.PHONY: all dev test prod clean
 
+all: dev
 
-build:
-	docker-compose build
+.env.test:
+	sed "s/DB_NAME=flaskdb/DB_NAME=flaskdb_test/g" .env.example > .env.test
 
+.env:
+	sed "s/DB_NAME=flaskdb/DB_NAME=flaskdb_prod/g" .env.example > .env
 
-dev:
-	docker-compose --env-file dev.env  up -d
+.env.dev:
+	sed "s/DB_NAME=flaskdb/DB_NAME=flaskdb_dev/g" .env.example > .env.dev
+
+dev: .env.dev
+	docker-compose --env-file .env.dev  up -d
+	docker-compose restart flask
 	docker-compose logs -f flask
 
 
-test:
-	docker-compose --env-file test.env -f docker-compose.yml -f docker-compose.test.yml up -d --force-recreate
+test: .env.test
+	docker-compose --env-file .env.test -f docker-compose.yml -f docker-compose.test.yml up -d --force-recreate
 	docker-compose logs -f flask
 
 
-prod:
+prod: .env
 	docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --force-recreate
 	docker-compose logs -f
 
+
 clean:
-	docker-compose stop
-	docker-compose rm -vf
-	docker volume prune --force
+	docker-compose down -v
+
