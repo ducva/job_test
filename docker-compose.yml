@@ -24,6 +24,7 @@ services:
     networks:
       - frontend
       - backend
+    command: python app.py
   mongodb:
     image: mongo
     container_name: mongodb
@@ -54,6 +55,13 @@ services:
       ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USERNAME}
       ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD}
       ME_CONFIG_MONGODB_SERVER: mongodb
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: "swagger-ui"
+    ports:
+      - "8082:8080"
+    environment:
+      API_URL: http://localhost:5000/spec
 volumes:
   mongodbdata:
     driver: local

@@ -3,10 +3,14 @@ import uuid
 
 from flask import Flask, jsonify, request, abort
 from mongoengine import OperationError
+from flask_swagger import swagger
+from flask_cors import CORS, cross_origin
 
 from models import db, Order
 
 application = Flask(__name__)
+cors = CORS(application)
+application.config['CORS_HEADERS'] = 'Content-Type'
 
 application.config['MONGODB_SETTINGS'] = {
     'db': os.environ["MONGODB_DATABASE"],
@@ -17,6 +21,15 @@ application.config['MONGODB_SETTINGS'] = {
 }
 
 db.init_app(application)
+
+
+@application.route("/spec")
+@cross_origin()
+def spec():
+    swag = swagger(application)
+    swag['info']['version'] = "1.0"
+    swag['info']['title'] = "Fruit Store API"
+    return jsonify(swag)
 
 
 @application.route('/')
@@ -68,6 +81,39 @@ def _validate_order(req):
 
 @application.route('/order', methods=["POST"])
 def add_orders():
+    """
+    Place an order.
+    ---
+    tags:
+      - order
+    definitions:
+        - schema:
+            id: Order
+            properties:
+              date:
+                type: "integer"
+                description: "The day of the year when the order should be ready. Must be in range (1, 366)"
+              fruits:
+                type: "object"
+                additionalProperties:
+                  type: "number"
+    produces:
+        - "application/json"
+    consumes:
+        - "application/json"
+    parameters:
+      - name: "body"
+        in: "body"
+        description: "order placed for purchasing fruits"
+        required: true
+        schema:
+            $ref: "#/definitions/Order"
+    responses:
+        400:
+            description: "Bad Request"
+        200:
+            description: "Success"
+    """
     code = _validate_order(request)
     if code != 200:
         abort(code)
@@ -106,6 +152,45 @@ def _validate_report(req):
 
 @application.route('/report', methods=["GET"])
 def report():
+    """
+    Get the report of fruits and their amounts required to prepare within a date range
+    ---
+    tags:
+      - report
+    definitions:
+        - schema:
+            id: Report
+            properties:
+                success:
+                    type: boolean
+                    description: Status of operation
+                data:
+                    additionalProperties:
+                        type: number
+    produces:
+        - "application/json"
+    consumes:
+        - "application/json"
+    parameters:
+      - name: "from"
+        in: "query"
+        description: "From date to filter. Must be in range (1, 366)"
+        required: true
+        type: "number"
+      - name: "to"
+        in: "query"
+        description: "up to date. Must be in range (1,366). And must be greater than From Date"
+        required: true
+        type: "number"
+    responses:
+        400:
+            description: "Bad Request"
+        200:
+            description: "Success"
+            schema:
+                $ref: "#/definitions/Report"
+    """
+
     code = _validate_report(request)
     if code != 200:
         abort(code)

@@ -1,4 +1,4 @@
-.PHONY: all dev test prod clean
+.PHONY: all dev test prod clean build
 
 all: dev
 
@@ -10,6 +10,11 @@ all: dev
 
 .env.dev:
 	sed "s/DB_NAME=flaskdb/DB_NAME=flaskdb_dev/g" .env.example > .env.dev
+
+
+build: .env
+	docker-compose build
+
 
 dev: .env.dev
 	docker-compose --env-file .env.dev  up -d

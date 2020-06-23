@@ -1,3 +1,5 @@
 Flask
 flask-mongoengine
 requests
+flask-swagger
+flask-cors

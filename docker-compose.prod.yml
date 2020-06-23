@@ -8,6 +8,8 @@ services:
     - 8080:5000
     depends_on:
       - mongodb
+    command: "gunicorn -w 4 --bind 0.0.0.0:5000 wsgi"
+
   mongodb:
     restart: always
   mongo-express:
