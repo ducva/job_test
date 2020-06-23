@@ -5,7 +5,7 @@ LABEL MAINTAINER="Michael Vu <vuanhduc2685@gmail.com>"
 ENV GROUP_ID=1000 \
     USER_ID=1000
 
-WORKDIR /var/www/
+WORKDIR /app
 
 RUN pip install --upgrade pip
 RUN pip install gunicorn
@@ -18,10 +18,9 @@ USER www
 
 FROM BaseImage
 EXPOSE 5000
-
-ADD ./requirements.txt /var/www/requirements.txt
+ADD ./requirements.txt /app/requirements.txt
+ADD . /app
 RUN pip install -r requirements.txt
-VOLUME /var/www
-COPY . /var/www/
+VOLUME /app
 
 CMD [ "gunicorn", "-w", "4", "--bind", "0.0.0.0:5000", "wsgi"]
